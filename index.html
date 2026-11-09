@@ -3,163 +3,188 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Time & Sample No. Report v2</title>
+<title>Time & Sample No. Report - Pro</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-  :root{--bg:#f3f5f9;--card:#fff;--tx:#1b2333;--mu:#667085;--bd:#dde1ea;--hd:#14285a;--ac:#14285a;--ac2:#1f5eff;--ex:#b45309;--lo:#0f766e}
-  :root[data-theme="dark"]{--bg:#12151b;--card:#1b2029;--tx:#e8ebf0;--mu:#9aa3b2;--bd:#323946;--ac:#6b93ff;--ac2:#6b93ff;--ex:#f0a24b;--lo:#4fd1c0}
-  :root[data-accent="emerald"]{--hd:#064e3b;--ac:#059669;--ac2:#059669}
-  :root[data-accent="sunset"]{--hd:#7c2d12;--ac:#ea580c;--ac2:#ea580c}
-  :root[data-accent="violet"]{--hd:#4c1d95;--ac:#7c3aed;--ac2:#7c3aed}
-  :root[data-theme="dark"][data-accent="emerald"]{--ac:#34d399;--ac2:#34d399}
-  :root[data-theme="dark"][data-accent="sunset"]{--ac:#fb923c;--ac2:#fb923c}
-  :root[data-theme="dark"][data-accent="violet"]{--ac:#a78bfa;--ac2:#a78bfa}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,Segoe UI,Arial,sans-serif;padding:20px}
-  .wrap{max-width:960px;margin:auto}
-  header{background:var(--hd);color:#fff;position:relative;overflow:hidden;border-radius:10px;padding:16px 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
-  header h1{font-size:20px;margin:0}header span{display:block;font-size:12px;opacity:.75;margin-top:3px}
-  .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:14px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
-  label{display:block;font-size:12px;color:var(--mu);margin-bottom:4px}
-  input,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font-size:14px}
-  button{padding:9px 16px;border:0;border-radius:6px;background:var(--ac2);color:#fff;font-size:14px;cursor:pointer}
-  button.sec{background:transparent;color:var(--ac2);border:1px solid var(--ac2)}
-  button.chip{padding:6px 12px;font-size:12px;border-radius:99px}
-  button:disabled{opacity:.4;cursor:not-allowed}
-  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
-  #drop{border:2px dashed var(--bd);border-radius:10px;padding:18px;text-align:center;color:var(--mu);cursor:pointer}
-  #drop.on{border-color:var(--ac2);color:var(--ac2)}
-  #status{font-size:13px;color:var(--mu);margin-top:10px}
-  .tot{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-  .tot div{flex:1;min-width:150px;border:1px solid var(--bd);border-left:5px solid var(--ac);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--mu)}
-  .tot b{display:block;font-size:26px;color:var(--tx)}
-  .tot .e{border-left-color:var(--ex)}.tot .l{border-left-color:var(--lo)}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{border:1px solid var(--bd);padding:7px 10px;text-align:left}
-  th{background:var(--hd);color:#fff}
-  tr.alt td{background:rgba(120,130,150,.09)}
-  tfoot td{font-weight:700;background:rgba(31,94,255,.1)}
-  td.n{text-align:center;font-weight:600}
-  .local{color:var(--lo);font-weight:600}.export{color:var(--ex);font-weight:600}
-  .meta{font-size:13px;color:var(--mu);margin-top:12px;line-height:1.6}
-  .scroll{overflow-x:auto}
-  #chart{display:flex;align-items:flex-end;gap:6px;height:150px;margin:6px 0 18px;padding-bottom:22px;overflow-x:auto}
-  .bar{flex:1;min-width:26px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative;height:100%}
-  .bar i{display:block;width:100%;max-width:34px}
-  .bar .v{font-size:11px;color:var(--mu)}
-  .bar .t{position:absolute;bottom:-20px;font-size:10px;color:var(--mu);white-space:nowrap}
-  .lg{font-size:12px;color:var(--mu);margin-bottom:4px}.lg b{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;border-radius:2px}
-  .credit{text-align:center;font-size:12px;color:var(--mu);padding:8px 0 4px}
-  .tbar{display:flex;gap:8px;align-items:center;position:relative;z-index:1}
-  .tbar .dot{width:20px;height:20px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:none}
-  .tbar .dot.on{transform:scale(1.25);box-shadow:0 0 0 2px rgba(255,255,255,.5)}
-  .tbar .tb{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.45);padding:6px 12px;font-size:12px;border-radius:99px}
-  header::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.18),transparent);animation:shine 5s ease-in-out infinite;pointer-events:none}
-  body,.card,input,select,th,td{transition:background .35s,color .35s,border-color .35s}
-  button{transition:transform .15s,box-shadow .15s,opacity .2s,background .3s}
-  button:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.22)}
-  button:not(:disabled):active{transform:none;box-shadow:none}
-  .card,header{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
-  #out.rise{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
-  .rowin{animation:fadeRow .45s ease both}
-  .bar i{transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.7,.2,1) both}
-  .bar .v{animation:fadeRow .6s .4s ease both}
-  #drop{transition:border-color .2s,color .2s,background .2s,transform .2s}
-  #drop:hover{border-color:var(--ac2);color:var(--ac2);transform:scale(1.01)}
-  #drop.on{background:rgba(120,130,150,.1);animation:pulse 1s infinite}
-  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--bd);border-top-color:var(--ac2);border-radius:50%;animation:rot .7s linear infinite;margin-right:8px;vertical-align:-2px}
-  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  @keyframes fadeRow{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-  @keyframes shine{0%,60%{left:-60%}100%{left:130%}}
-  @keyframes rot{to{transform:rotate(360deg)}}
-  @keyframes pulse{50%{box-shadow:0 0 0 6px rgba(120,130,150,.15)}}
-  @media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
-  @media print{body{background:#fff;color:#000;padding:0}.noprint{display:none}.card{border:0;padding:0}}
+:root{--bg:#f3f5f9;--card:#fff;--tx:#1b2333;--mu:#667085;--bd:#dde1ea;--hd:#14285a;--ac:#14285a;--ac2:#1f5eff;--ex:#b45309;--lo:#0f766e;--gold:#f5c451}
+:root[data-theme="dark"]{--bg:#0f1218;--card:#1a1f29;--tx:#e8ebf0;--mu:#9aa3b2;--bd:#303744;--ac:#6b93ff;--ac2:#6b93ff;--ex:#f0a24b;--lo:#4fd1c0}
+:root[data-accent="emerald"]{--hd:#064e3b;--ac:#059669;--ac2:#059669}
+:root[data-accent="sunset"]{--hd:#7c2d12;--ac:#ea580c;--ac2:#ea580c}
+:root[data-accent="violet"]{--hd:#4c1d95;--ac:#7c3aed;--ac2:#7c3aed}
+:root[data-theme="dark"][data-accent="emerald"]{--ac:#34d399;--ac2:#34d399}
+:root[data-theme="dark"][data-accent="sunset"]{--ac:#fb923c;--ac2:#fb923c}
+:root[data-theme="dark"][data-accent="violet"]{--ac:#a78bfa;--ac2:#a78bfa}
+:root[data-accent="gold"]{--hd:#3a2a05;--ac:#b8860b;--ac2:#b8860b}
+:root[data-theme="dark"][data-accent="gold"]{--ac:#f5c451;--ac2:#f5c451}
+:root[data-theme="dark"][data-accent="gold"] button:not(.sec):not(.dot):not(.tb){color:#241a00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;padding:20px;min-height:100vh}
+body::before,body::after{content:"";position:fixed;z-index:-1;width:540px;height:540px;border-radius:50%;filter:blur(100px);opacity:.32;animation:float 18s ease-in-out infinite;pointer-events:none}
+body::before{background:var(--ac2);top:-170px;left:-130px}body::after{background:var(--gold);bottom:-210px;right:-150px;opacity:.2;animation-delay:-9s}
+.wrap{max-width:1000px;margin:auto}
+header{background:linear-gradient(120deg,var(--hd),color-mix(in srgb,var(--hd) 45%,#000),var(--hd));background-size:200% 100%;animation:gl 12s linear infinite;color:#fff;position:relative;overflow:hidden;border-radius:18px;padding:22px 26px;margin-bottom:16px;box-shadow:0 14px 40px rgba(0,0,0,.25);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+header h1{font-size:20px;margin:0}header span{display:block;font-size:12px;opacity:.8;margin-top:3px}
+header::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.18),transparent);animation:shine 5s ease-in-out infinite;pointer-events:none}
+.tbar{display:flex;gap:8px;align-items:center;position:relative;z-index:1}
+.tbar .dot{width:20px;height:20px;padding:0;border-radius:50%;border:2px solid #fff}
+.tbar .dot.on{transform:scale(1.25);box-shadow:0 0 0 2px rgba(255,255,255,.5)}
+.tbar .tb{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.45);padding:6px 12px;font-size:12px;border-radius:99px}
+.card{background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(14px);box-shadow:0 10px 34px rgba(15,25,60,.10);border:1px solid var(--bd);border-radius:16px;padding:18px;margin-bottom:16px;animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+#out.rise{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:14px}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:4px}
+input,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font-size:14px}
+button{padding:10px 18px;border:0;border-radius:10px;background:linear-gradient(135deg,var(--ac2),color-mix(in srgb,var(--ac2) 62%,#000));color:#fff;font-weight:600;font-size:14px;cursor:pointer;transition:transform .15s,box-shadow .15s,opacity .2s}
+button.sec{background:transparent;color:var(--ac2);border:1px solid var(--ac2)}
+button.chip{padding:6px 12px;font-size:12px;border-radius:99px}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.22)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+#drop{border:2px dashed var(--bd);border-radius:12px;padding:18px;text-align:center;color:var(--mu);cursor:pointer;transition:.2s}
+#drop:hover,#drop.on{border-color:var(--ac2);color:var(--ac2);background:rgba(120,130,150,.08)}
+#status{font-size:13px;color:var(--mu);margin-top:10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.kpis div{border:1px solid var(--bd);border-left:5px solid var(--ac);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--mu)}
+.kpis b{display:block;font-size:24px;color:var(--tx)}.kpis .e{border-left-color:var(--ex)}.kpis .l{border-left-color:var(--lo)}.kpis .g{border-left-color:var(--gold)}
+.kpis small{font-size:11px}
+.tabs{display:flex;gap:6px;margin:6px 0 12px}.tabs button{background:transparent;color:var(--mu);border:1px solid var(--bd);border-radius:99px;padding:6px 14px;font-size:13px}
+.tabs button.on{background:var(--ac2);color:#fff;border-color:var(--ac2)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{border:1px solid var(--bd);padding:7px 10px;text-align:left}
+th{background:var(--hd);color:#fff}tr.alt td{background:rgba(120,130,150,.09)}tfoot td{font-weight:700;background:rgba(31,94,255,.1)}
+td.n{text-align:center;font-weight:600}.local{color:var(--lo);font-weight:600}.export{color:var(--ex);font-weight:600}
+.meta{font-size:13px;color:var(--mu);margin-top:12px;line-height:1.6}.scroll{overflow-x:auto}
+#chart{display:flex;align-items:flex-end;gap:6px;height:150px;margin:6px 0 24px;padding-bottom:22px;overflow-x:auto}
+.bar{flex:1;min-width:30px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative;height:100%}
+.bar i{display:block;width:100%;max-width:34px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.7,.2,1) both}
+.bar .v{font-size:11px;color:var(--mu);animation:fadeRow .6s .4s ease both}.bar .t{position:absolute;bottom:-20px;font-size:10px;color:var(--mu);white-space:nowrap}
+.lg{font-size:12px;color:var(--mu);margin-bottom:4px}.lg b{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;border-radius:2px}
+.rowin{animation:fadeRow .45s ease both}
+.credit{text-align:center;font-size:12px;color:var(--mu);padding:8px 0 4px}
+input:focus,select:focus{outline:none;border-color:var(--ac2);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac2) 25%,transparent)}
+button.sec,button.chip{background:transparent;font-weight:500}
+button.sec:not(:disabled):hover{background:color-mix(in srgb,var(--ac2) 12%,transparent)}
+#go:not(:disabled){animation:ping 2.4s ease-in-out infinite}
+.hero{display:flex;align-items:center;gap:14px;position:relative;z-index:1}.hero h1{font-size:24px;letter-spacing:.3px}
+.logo{width:52px;height:52px;flex:none}.logo rect{transform-box:fill-box;transform-origin:bottom;animation:grow 1.1s cubic-bezier(.2,.7,.2,1) both}
+.logo rect:nth-of-type(3){animation-delay:.15s}.logo rect:nth-of-type(4){animation-delay:.3s}
+.kpis div{background:color-mix(in srgb,var(--card) 90%,transparent);position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s}
+.kpis div:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(0,0,0,.16)}
+.kpis div::after{content:"";position:absolute;right:-22px;top:-22px;width:80px;height:80px;border-radius:50%;background:var(--ac2);opacity:.07}
+.kpis .e::after{background:var(--ex)}.kpis .l::after{background:var(--lo)}.kpis .g::after{background:var(--gold)}
+#out.rise .kpis div{animation:rise .6s cubic-bezier(.2,.7,.2,1) both}
+#out.rise .kpis div:nth-child(2){animation-delay:.07s}#out.rise .kpis div:nth-child(3){animation-delay:.14s}#out.rise .kpis div:nth-child(4){animation-delay:.21s}#out.rise .kpis div:nth-child(5){animation-delay:.28s}
+tbody tr:hover td{background:color-mix(in srgb,var(--ac2) 13%,transparent)}
+th:first-child{border-top-left-radius:8px}th:last-child{border-top-right-radius:8px}
+.credit{display:table;margin:6px auto;padding:6px 16px;border-radius:99px;background:color-mix(in srgb,var(--card) 80%,transparent);border:1px solid var(--bd)}
+#rain{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+#live{display:none;font-size:12px;color:rgba(255,255,255,.65);margin-bottom:10px}#live b{color:var(--gold);font-size:16px;font-variant-numeric:tabular-nums}
+@keyframes float{50%{transform:translate(70px,50px) scale(1.12)}}
+@keyframes ping{50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--ac2) 0%,transparent),0 6px 22px color-mix(in srgb,var(--ac2) 45%,transparent)}}
+@media print{body::before,body::after{display:none}}
+/* VIP process overlay */
+#ov{position:fixed;inset:0;display:none;place-items:center;background:rgba(5,8,20,.75);backdrop-filter:blur(8px);z-index:99}
+#ov.on{display:grid;animation:fadeRow .3s both}
+.pbox{width:min(430px,92vw);padding:26px 26px 22px;border-radius:20px;background:linear-gradient(160deg,#1f2747,#0b0f22);border:1px solid rgba(245,196,81,.4);box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 50px rgba(245,196,81,.15);color:#fff;text-align:center;animation:pop .5s cubic-bezier(.2,.9,.3,1.25);position:relative;overflow:hidden}
+.ringw{position:relative;width:128px;height:128px;margin:0 auto 12px}
+.ringw svg{width:128px;height:128px;transform:rotate(-90deg)}
+#ring{transition:stroke-dashoffset .6s cubic-bezier(.3,.8,.3,1)}
+.orbit{position:absolute;inset:-9px;border-radius:50%;border:2px dashed rgba(245,196,81,.55);animation:rot 6s linear infinite}
+.orbit2{position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(245,196,81,.25);animation:rot 10s linear infinite reverse;border-top-color:var(--gold)}
+#pct{position:absolute;inset:0;display:grid;place-items:center;font-size:28px;font-weight:700}
+#ptitle{margin:6px 0 14px;font-size:18px;background:linear-gradient(90deg,#fff,var(--gold),#fff);background-size:200%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gl 2.4s linear infinite}
+#steps{list-style:none;margin:0 0 14px;padding:0;text-align:left;font-size:14px}
+#steps li{display:flex;align-items:center;gap:10px;padding:5px 0;opacity:.35;transition:opacity .3s;animation:slideIn .5s both}
+#steps li.act,#steps li.ok{opacity:1}
+.ic{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:grid;place-items:center;font-size:11px;flex:none}
+li.act .ic{border-color:var(--gold);border-top-color:transparent;animation:rot .7s linear infinite}
+li.ok .ic{background:var(--gold);border-color:var(--gold);color:#241a00;animation:tick .4s}li.ok .ic::after{content:"\2713";font-weight:700}
+.pbar{height:6px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden}
+#pfill{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),#ffe9a8,var(--gold));background-size:200%;border-radius:9px;transition:width .6s cubic-bezier(.3,.8,.3,1);animation:gl 1.6s linear infinite}
+#ov.done .orbit,#ov.done .orbit2{animation-play-state:paused}#ov.done .ringw{animation:glow 1s ease}
+.sp{position:absolute;left:50%;top:35%;width:6px;height:6px;border-radius:50%;background:var(--gold);animation:burst 1s ease-out both;pointer-events:none}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fadeRow{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes shine{0%,60%{left:-60%}100%{left:130%}}
+@keyframes rot{to{transform:rotate(360deg)}}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes gl{to{background-position:200% 0}}
+@keyframes slideIn{from{transform:translateX(-14px)}to{transform:none}}
+@keyframes tick{0%{transform:scale(.3)}70%{transform:scale(1.35)}100%{transform:scale(1)}}
+@keyframes glow{50%{filter:drop-shadow(0 0 18px var(--gold))}}
+@keyframes burst{to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+@media print{body{background:#fff;color:#000;padding:0}.noprint,#ov{display:none!important}.card{border:0;padding:0}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div><h1>TIME &amp; SAMPLE NO. Report</h1><span>v3 &bull; Development by Sarfaraz &bull; 03283363738</span></div>
-    <div class="tbar">
-      <button class="dot" data-a="ocean" style="background:#1f5eff" title="Ocean"></button>
-      <button class="dot" data-a="emerald" style="background:#059669" title="Emerald"></button>
-      <button class="dot" data-a="sunset" style="background:#ea580c" title="Sunset"></button>
-      <button class="dot" data-a="violet" style="background:#7c3aed" title="Violet"></button>
-      <button class="tb" id="themeBtn">Dark mode</button>
-    </div>
-  </header>
-
-  <div class="card noprint">
-    <div id="drop">Drag &amp; drop your Master Excel file here, or click to select (.xlsx)</div>
-    <input type="file" id="file" accept=".xlsx,.xlsm,.xls" hidden>
-    <div id="status">No file loaded yet.</div>
-
-    <div class="row">
-      <span style="font-size:12px;color:var(--mu)">Quick range (based on the last day in your data):</span>
-      <button class="chip sec" data-p="shift" disabled>Last shift 7PM - 9AM</button>
-      <button class="chip sec" data-p="day" disabled>Last full day</button>
-      <button class="chip sec" data-p="24" disabled>Last 24 hours</button>
-    </div>
-
-    <div class="grid">
-      <div><label>From (Date &amp; Time)</label><input type="datetime-local" id="from" value="2026-11-05T19:00"></div>
-      <div><label>To (up to, not including)</label><input type="datetime-local" id="to" value="2026-11-06T09:00"></div>
-      <div><label>Receiving column</label>
-        <select id="stage">
-          <option value="1">2nd Rec Date/Time (AA/AB)</option>
-          <option value="0">1st Rec Date/Time (S/T)</option>
-          <option value="2">Bonanza Rec Date/Time (AY/AZ)</option>
-          <option value="all">All three combined</option>
-        </select></div>
-      <div><label>Total Sample count</label>
-        <select id="mode">
-          <option value="rows">Count rows (matches reference PDF)</option>
-          <option value="sum">Sum of "Number of Samples" (blank = 1)</option>
-        </select></div>
-      <div><label>Customer filter</label><select id="cust"><option value="">All customers</option></select></div>
-      <div><label>Empty hours</label>
-        <select id="empty"><option value="0">Hide (like reference PDF)</option><option value="1">Show (with 0)</option></select></div>
-    </div>
-    <div class="row">
-      <button id="go" disabled>Generate report</button>
-      <button id="pdf" disabled>PDF download</button>
-      <button class="sec" id="xl" disabled>Excel download</button>
-      <button class="sec" id="print" disabled>Print</button>
-    </div>
+<header>
+  <div class="hero"><svg class="logo" viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="rgba(255,255,255,.14)"/><rect x="9" y="26" width="7" height="12" rx="2" fill="#f5c451"/><rect x="20.5" y="13" width="7" height="25" rx="2" fill="#fff"/><rect x="32" y="19" width="7" height="19" rx="2" fill="#f5c451"/></svg>
+    <div><h1>TIME &amp; SAMPLE NO. Report <small style="font-size:11px;color:var(--gold);vertical-align:middle">PRO</small></h1><span>Hourly sample intelligence &bull; Development by Sarfaraz &bull; 03283363738</span></div></div>
+  <div class="tbar">
+    <button class="dot" data-a="ocean" style="background:#1f5eff" title="Ocean"></button><button class="dot" data-a="emerald" style="background:#059669" title="Emerald"></button>
+    <button class="dot" data-a="sunset" style="background:#ea580c" title="Sunset"></button><button class="dot" data-a="violet" style="background:#7c3aed" title="Violet"></button><button class="dot" data-a="gold" style="background:#f5c451" title="VIP Gold"></button>
+    <button class="tb" id="themeBtn">Dark mode</button>
   </div>
+</header>
 
-  <div class="card" id="out" style="display:none">
-    <div class="tot">
-      <div>Grand Total<b id="gt">0</b></div>
-      <div class="e">Total Export Sample<b id="te">0</b></div>
-      <div class="l">Total Local Sample<b id="tl">0</b></div>
-    </div>
-    <div class="lg"><b style="background:var(--lo)"></b>Local<b style="background:var(--ex)"></b>Export</div>
-    <div id="chart"></div>
-    <div class="scroll">
-      <table>
-        <thead><tr><th>Sno</th><th>Date</th><th>Time</th><th>Total Sample</th><th>Remarks</th></tr></thead>
-        <tbody id="tb"></tbody>
-        <tfoot><tr><td colspan="3">Total</td><td class="n" id="ft">0</td><td></td></tr></tfoot>
-      </table>
-    </div>
-    <div class="meta" id="meta"></div>
+<div class="card noprint">
+  <div id="drop">Drag &amp; drop your Master Excel file here, or click to select (.xlsx)</div>
+  <input type="file" id="file" accept=".xlsx,.xlsm,.xls" hidden>
+  <div id="status">No file loaded yet.</div>
+  <div class="row"><span style="font-size:12px;color:var(--mu)">Quick range (based on the last day in your data):</span>
+    <button class="chip sec" data-p="shift" disabled>Last shift 7PM - 9AM</button><button class="chip sec" data-p="day" disabled>Last full day</button>
+    <button class="chip sec" data-p="24" disabled>Last 24 hours</button><button class="chip sec" data-p="week" disabled>Last 7 days</button></div>
+  <div class="grid">
+    <div><label>From (Date &amp; Time)</label><input type="datetime-local" id="from" value="2026-11-05T19:00"></div>
+    <div><label>To (up to, not including)</label><input type="datetime-local" id="to" value="2026-11-06T10:00"></div>
+    <div><label>Receiving column</label><select id="stage"><option value="1">2nd Rec Date/Time (AA/AB)</option><option value="0">1st Rec Date/Time (S/T)</option><option value="2">Bonanza Rec Date/Time (AY/AZ)</option><option value="all">All three combined</option></select></div>
+    <div><label>Total Sample count</label><select id="mode"><option value="rows">Count rows (matches reference PDF)</option><option value="sum">Sum of "Number of Samples" (blank = 1)</option></select></div>
+    <div><label>Time slot size</label><select id="slot"><option value="60">1 hour</option><option value="30">30 minutes</option><option value="120">2 hours</option><option value="240">4 hours</option></select></div>
+    <div><label>Customer</label><select id="cust"><option value="">All customers</option></select></div>
+    <div><label>Category (column A)</label><select id="catf"><option value="">All categories</option></select></div>
+    <div><label>Empty slots</label><select id="empty"><option value="0">Hide (like reference PDF)</option><option value="1">Show (with 0)</option></select></div>
   </div>
-  <div class="credit">Development by <b>Sarfaraz</b> &bull; 03283363738</div>
+  <div class="row"><button id="go" disabled>Generate report</button><button id="pdf" disabled>PDF download</button><button class="sec" id="xl" disabled>Excel download</button><button class="sec" id="print" disabled>Print</button></div>
 </div>
 
+<div class="card" id="out" style="display:none">
+  <div class="kpis">
+    <div>Grand Total<b id="gt">0</b></div><div class="e">Total Export Sample<b id="te">0</b></div><div class="l">Total Local Sample<b id="tl">0</b></div>
+    <div class="g">Peak slot<b id="pk" style="font-size:16px;padding:6px 0">-</b><small id="pk2"></small></div>
+    <div class="g">Export share<b id="xs">0%</b><small id="av"></small></div>
+  </div>
+  <div class="tabs"><button class="on" data-v="h">Time slots</button><button data-v="d">Daily summary</button></div>
+  <div id="vh">
+    <div class="lg"><b style="background:var(--lo)"></b>Local<b style="background:var(--ex)"></b>Export</div>
+    <div id="chart"></div>
+    <div class="scroll"><table><thead><tr><th>Sno</th><th>Date</th><th>Time</th><th>Total Sample</th><th>Remarks</th></tr></thead><tbody id="tb"></tbody>
+    <tfoot><tr><td colspan="3">Total</td><td class="n" id="ft">0</td><td></td></tr></tfoot></table></div>
+  </div>
+  <div id="vd" style="display:none"><div class="scroll"><table><thead><tr><th>Date</th><th>Local</th><th>Export</th><th>Total</th><th>Peak slot</th></tr></thead><tbody id="db"></tbody></table></div></div>
+  <div class="meta" id="meta"></div>
+</div>
+<div class="credit">Development by <b>Sarfaraz</b> &bull; 03283363738</div>
+</div>
+
+<div id="ov"><canvas id="rain"></canvas><div class="pbox">
+  <div class="ringw"><div class="orbit2"></div><div class="orbit"></div>
+    <svg viewBox="0 0 128 128"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5c451"/><stop offset="1" stop-color="#ffe9a8"/></linearGradient></defs>
+    <circle cx="64" cy="64" r="54" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>
+    <circle id="ring" cx="64" cy="64" r="54" fill="none" stroke="url(#gr)" stroke-width="8" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3"/></svg>
+    <div id="pct">0%</div></div>
+  <div id="ptitle">Processing</div><ul id="steps"></ul><div id="live"><b id="lv">0</b> entries processed</div><div class="pbar"><i id="pfill"></i></div>
+</div></div>
+
 <script>
-const EPOCH = Date.UTC(1899, 11, 30) / 60000;
+const EPOCH = Date.UTC(1899, 11, 30) / 60000, $ = id => document.getElementById(id);
 let DATA = [], LAST = null, MAXT = null;
-const $ = id => document.getElementById(id);
 
 /* ---------- theme ---------- */
-const ACC = { ocean: [20, 40, 90], emerald: [6, 78, 59], sunset: [124, 45, 18], violet: [76, 29, 149] };
+const ACC = { ocean: [20, 40, 90], emerald: [6, 78, 59], sunset: [124, 45, 18], violet: [76, 29, 149], gold: [110, 80, 10] };
 let THEME = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light', ACCENT = 'ocean';
 try { const o = JSON.parse(localStorage.getItem('tsr_theme') || 'null'); if (o) { THEME = o.t; ACCENT = o.a; } } catch (e) {}
 function applyTheme() {
@@ -171,215 +196,179 @@ function applyTheme() {
 $('themeBtn').onclick = () => { THEME = THEME === 'dark' ? 'light' : 'dark'; applyTheme(); };
 document.querySelectorAll('.dot').forEach(d => d.onclick = () => { ACCENT = d.dataset.a; applyTheme(); });
 applyTheme();
-
-function countUp(el, to) {
-  const t0 = performance.now(), d = 800;
-  (function f(t) { const p = Math.min(1, (t - t0) / d); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); })(t0);
-}
+const SK = ['stage', 'mode', 'slot', 'empty'];
+try { const o = JSON.parse(localStorage.getItem('tsr_set3') || 'null'); if (o) SK.forEach(k => { if (o[k]) $(k).value = o[k]; }); } catch (e) {}
+SK.forEach(k => $(k).addEventListener('change', () => { try { const o = {}; SK.forEach(x => o[x] = $(x).value); localStorage.setItem('tsr_set3', JSON.stringify(o)); } catch (e) {} }));
 
 /* ---------- helpers ---------- */
-function toMin(d, t) {
-  if (typeof d !== 'number' || typeof t !== 'number') return null;
-  return Math.floor(d) * 1440 + Math.floor((t - Math.floor(t)) * 1440 + 1e-6);   // truncate seconds like Excel shows
-}
-function inputMin(v) {
-  if (!v) return null;
-  const [dt, tm] = v.split('T'), [y, m, d] = dt.split('-').map(Number), [h, mi] = tm.split(':').map(Number);
-  return Date.UTC(y, m - 1, d, h, mi) / 60000 - EPOCH;
-}
+const p2 = n => String(n).padStart(2, '0'), tick = ms => new Promise(r => setTimeout(r, ms));
+function toMin(d, t) { if (typeof d !== 'number' || typeof t !== 'number') return null;
+  return Math.floor(d) * 1440 + Math.floor((t - Math.floor(t)) * 1440 + 1e-6); }
+function inputMin(v) { if (!v) return null; const [dt, tm] = v.split('T'), [y, m, d] = dt.split('-').map(Number), [h, mi] = tm.split(':').map(Number);
+  return Date.UTC(y, m - 1, d, h, mi) / 60000 - EPOCH; }
 const dObj = min => new Date((min + EPOCH) * 60000);
-const p2 = n => String(n).padStart(2, '0');
-function minToInput(min) { const d = dObj(min);
-  return d.getUTCFullYear() + '-' + p2(d.getUTCMonth() + 1) + '-' + p2(d.getUTCDate()) + 'T' + p2(d.getUTCHours()) + ':' + p2(d.getUTCMinutes()); }
-function fmtDate(min) { return dObj(min).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }); }
+function minToInput(min) { const d = dObj(min); return d.getUTCFullYear() + '-' + p2(d.getUTCMonth() + 1) + '-' + p2(d.getUTCDate()) + 'T' + p2(d.getUTCHours()) + ':' + p2(d.getUTCMinutes()); }
+const fmtDate = min => dObj(min).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 function fmtShort(min) { const d = dObj(min), M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return d.getUTCDate() + '-' + M[d.getUTCMonth()] + '-' + String(d.getUTCFullYear()).slice(2); }
-function fmtHr(h) { const x = ((h % 24) + 24) % 24; return ((x % 12) || 12) + ':00 ' + (x >= 12 ? 'PM' : 'AM'); }
-function fmtTime(min) { const m = ((min % 1440) + 1440) % 1440, h = Math.floor(m / 60);
-  return ((h % 12) || 12) + ':' + p2(m % 60) + ' ' + (h >= 12 ? 'PM' : 'AM'); }
-const slotLabel = hr => fmtHr(hr % 24) + ' - ' + fmtHr((hr + 1) % 24);
+function fmtTime(min) { const m = ((min % 1440) + 1440) % 1440, h = Math.floor(m / 60); return ((h % 12) || 12) + ':' + p2(m % 60) + ' ' + (h >= 12 ? 'PM' : 'AM'); }
+const slotLabel = (st, sl) => fmtTime(st) + ' - ' + fmtTime(st + sl);
+function countUp(el, to) { const t0 = performance.now(); (function f(t) { const p = Math.min(1, (t - t0) / 800);
+  el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); })(t0); }
 
-/* ---------- saved settings ---------- */
-function saveSet() { try { localStorage.setItem('tsr_set2', JSON.stringify({ s: $('stage').value, m: $('mode').value, e: $('empty').value })); } catch (e) {} }
-(function () { try { const o = JSON.parse(localStorage.getItem('tsr_set2') || 'null');
-  if (o) { $('stage').value = o.s; $('mode').value = o.m; $('empty').value = o.e; } } catch (e) {} })();
-['stage', 'mode', 'empty'].forEach(i => $(i).addEventListener('change', saveSet));
+/* ---------- VIP process overlay ---------- */
+let OVT = 0, RAIN = 0;
+function rain(on) { cancelAnimationFrame(RAIN); const c = $('rain'), x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height);
+  if (!on || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  c.width = innerWidth; c.height = innerHeight; const cols = Math.floor(c.width / 18), y = Array.from({ length: cols }, () => Math.random() * c.height / 18 | 0);
+  (function f() { x.fillStyle = 'rgba(5,8,20,.14)'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#f5c451'; x.font = '14px monospace';
+    y.forEach((v, i) => { x.fillText(String(Math.random() * 10 | 0), i * 18, v * 18); y[i] = v * 18 > c.height && Math.random() > .96 ? 0 : v + 1; }); RAIN = requestAnimationFrame(f); })(); }
+function setP(p) { if (OVT) $('lv').textContent = Math.round(OVT * p).toLocaleString(); $('ring').style.strokeDashoffset = 339.3 * (1 - p); $('pfill').style.width = p * 100 + '%'; $('pct').textContent = Math.round(p * 100) + '%'; }
+function sparks() { const b = document.querySelector('.pbox');
+  for (let i = 0; i < 16; i++) { const s = document.createElement('i'), a = i / 16 * 6.283, r = 70 + Math.random() * 60; s.className = 'sp';
+    s.style.setProperty('--x', Math.cos(a) * r + 'px'); s.style.setProperty('--y', Math.sin(a) * r + 'px'); b.appendChild(s); setTimeout(() => s.remove(), 1100); } }
+async function runProcess(title, steps, total = 0) {
+  const ov = $('ov'), ul = $('steps'); $('ptitle').textContent = title; ul.innerHTML = '';
+  steps.forEach((s, i) => { const li = document.createElement('li'); li.innerHTML = '<span class="ic"></span><span>' + s[0] + '</span>'; li.style.animationDelay = i * 80 + 'ms'; ul.appendChild(li); });
+  OVT = total; $('live').style.display = total ? 'block' : 'none'; ov.classList.remove('done'); ov.classList.add('on'); setP(0); rain(true);
+  try {
+    await tick(350);
+    for (let i = 0; i < steps.length; i++) {
+      const li = ul.children[i]; li.classList.add('act'); await tick(220);
+      await steps[i][1](); await tick(260);
+      li.classList.remove('act'); li.classList.add('ok'); setP((i + 1) / steps.length);
+    }
+    ov.classList.add('done'); $('ptitle').textContent = 'Completed'; $('pct').textContent = '\u2713'; sparks(); await tick(900);
+  } finally { ov.classList.remove('on'); rain(false); }
+}
 
 /* ---------- file loading ---------- */
 const drop = $('drop');
 drop.onclick = () => $('file').click();
-drop.ondragover = e => { e.preventDefault(); drop.classList.add('on'); };
-drop.ondragleave = () => drop.classList.remove('on');
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('on'); }; drop.ondragleave = () => drop.classList.remove('on');
 drop.ondrop = e => { e.preventDefault(); drop.classList.remove('on'); if (e.dataTransfer.files[0]) load(e.dataTransfer.files[0]); };
 $('file').onchange = e => { if (e.target.files[0]) load(e.target.files[0]); };
 
-function load(f) {
-  $('status').innerHTML = '<span class="spin"></span>Loading file... (large files may take a few seconds)';
-  const r = new FileReader();
-  r.onload = ev => setTimeout(() => { try { parse(ev.target.result, f.name); } catch (err) { $('status').textContent = 'Error: ' + err.message; } }, 50);
-  r.readAsArrayBuffer(f);
+async function load(f) {
+  let buf, wb, rows, head, stages = [], mn = Infinity, mx = -Infinity; const custs = new Set(), cats = new Set();
+  try {
+    await runProcess('Loading master sheet', [
+      ['Reading file', async () => { buf = await f.arrayBuffer(); }],
+      ['Parsing workbook', () => { wb = XLSX.read(buf, { type: 'array' }); }],
+      ['Extracting rows', () => { const ws = wb.Sheets[wb.SheetNames[0]], rg = XLSX.utils.decode_range(ws['!ref']); rg.e.c = Math.min(rg.e.c, 70);
+        rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, range: XLSX.utils.encode_range(rg) }); }],
+      ['Detecting columns', () => { head = (rows[0] || []).map(h => String(h || '').trim().toLowerCase());
+        head.forEach((h, i) => { if (h === 'rec date') { let ns = -1; for (let j = i + 1; j < head.length && head[j] !== 'rec date'; j++) if (head[j] === 'number of samples') { ns = j; break; } stages.push({ d: i, t: i + 1, ns }); } });
+        if (!stages.length) throw new Error('Could not find a "Rec Date" column.'); }],
+      ['Building time index', () => { const ci = head.indexOf('customer'); DATA = [];
+        for (let r = 1; r < rows.length; r++) { const row = rows[r]; if (!row) continue;
+          const raw = String(row[0] || '').trim(), cat = raw.toUpperCase() === 'EXPORT' ? 'export' : 'local', cu = ci >= 0 ? String(row[ci] || '').trim() : '';
+          stages.forEach((s, si) => { const t = toMin(row[s.d], row[s.t]); if (t === null) return;
+            DATA.push({ t, cat, n: s.ns >= 0 && typeof row[s.ns] === 'number' ? row[s.ns] : 1, stage: si, cu, raw });
+            if (cu) custs.add(cu); if (raw) cats.add(raw); if (t < mn) mn = t; if (t > mx) mx = t; }); } MAXT = mx; }],
+      ['Preparing filters', () => { const fill = (id, all, set) => { const s = $(id); s.innerHTML = '<option value="">' + all + '</option>';
+          [...set].sort().forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; s.appendChild(o); }); };
+        fill('cust', 'All customers', custs); fill('catf', 'All categories', cats); }]
+    ]);
+  } catch (err) { $('status').textContent = 'Error: ' + err.message; return; }
+  $('status').textContent = 'Loaded: ' + f.name + ' | ' + DATA.length + ' entries | Data from ' + fmtShort(mn) + ' to ' + fmtShort(mx) + '.';
+  document.querySelectorAll('[data-p]').forEach(b => b.disabled = false); $('go').disabled = false; preset('shift');
 }
 
-function parse(buf, name) {
-  const wb = XLSX.read(buf, { type: 'array' });
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rg = XLSX.utils.decode_range(ws['!ref']); rg.e.c = Math.min(rg.e.c, 70);
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, range: XLSX.utils.encode_range(rg) });
-  const head = (rows[0] || []).map(h => String(h || '').trim().toLowerCase());
-  const stages = [];
-  head.forEach((h, i) => { if (h === 'rec date') {
-    let ns = -1; for (let j = i + 1; j < head.length && head[j] !== 'rec date'; j++) if (head[j] === 'number of samples') { ns = j; break; }
-    stages.push({ d: i, t: i + 1, ns }); } });
-  if (!stages.length) throw new Error('Could not find a "Rec Date" column.');
-  const custIdx = head.indexOf('customer');
-
-  DATA = []; const custs = new Set(); let mn = Infinity, mx = -Infinity;
-  for (let r = 1; r < rows.length; r++) {
-    const row = rows[r]; if (!row) continue;
-    const cat = String(row[0] || '').trim().toUpperCase() === 'EXPORT' ? 'export' : 'local';
-    const cu = custIdx >= 0 ? String(row[custIdx] || '').trim() : '';
-    stages.forEach((s, si) => {
-      const t = toMin(row[s.d], row[s.t]); if (t === null) return;
-      let n = 1; if (s.ns >= 0 && typeof row[s.ns] === 'number') n = row[s.ns];
-      DATA.push({ t, cat, n, stage: si, cu }); if (cu) custs.add(cu);
-      if (t < mn) mn = t; if (t > mx) mx = t;
-    });
-  }
-  MAXT = mx;
-  const sel = $('cust'); sel.innerHTML = '<option value="">All customers</option>';
-  [...custs].sort().forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
-  $('status').textContent = 'Loaded: ' + name + ' | ' + DATA.length + ' entries | Data from ' + fmtShort(mn) + ' to ' + fmtShort(mx) + '.';
-  document.querySelectorAll('[data-p]').forEach(b => b.disabled = false);
-  $('go').disabled = false;
-  preset('shift');
-}
-
-/* ---------- quick ranges ---------- */
 function preset(p) {
-  if (MAXT === null) return;
-  const day = Math.floor(MAXT / 1440);
-  let f, t;
-  if (p === 'shift') { f = (day - 1) * 1440 + 19 * 60; t = day * 1440 + 9 * 60; }
-  else if (p === 'day') { f = day * 1440; t = (day + 1) * 1440; }
-  else { t = MAXT + 1; f = t - 1440; }
+  if (MAXT === null) return; const day = Math.floor(MAXT / 1440); let f, t;
+  if (p === 'shift') { f = (day - 1) * 1440 + 1140; t = day * 1440 + 540; } else if (p === 'day') { f = day * 1440; t = f + 1440; }
+  else if (p === 'week') { f = (day - 6) * 1440; t = (day + 1) * 1440; } else { t = MAXT + 1; f = t - 1440; }
   $('from').value = minToInput(f); $('to').value = minToInput(t);
 }
-document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { preset(b.dataset.p); $('go').click(); });
+document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { preset(b.dataset.p); generate(); });
+$('go').onclick = generate;
 
 /* ---------- report ---------- */
-$('go').onclick = () => {
+async function generate() {
   const from = inputMin($('from').value), to = inputMin($('to').value);
   if (from === null || to === null || to <= from) { alert('Please select a valid From / To date and time.'); return; }
-  const st = $('stage').value, mode = $('mode').value, cu = $('cust').value, showEmpty = $('empty').value === '1';
-  const map = new Map(); let tE = 0, tL = 0;
-  DATA.forEach(x => {
-    if (x.t < from || x.t >= to) return;
-    if (st !== 'all' && x.stage !== +st) return;
-    if (cu && x.cu !== cu) return;
-    const v = mode === 'rows' ? 1 : x.n, k = Math.floor(x.t / 60) + '|' + x.cat;
-    map.set(k, (map.get(k) || 0) + v);
-    x.cat === 'export' ? tE += v : tL += v;
-  });
-  let list = [...map.entries()].map(([k, v]) => { const [h, c] = k.split('|'); return { hr: +h, cat: c, n: v }; });
-  if (showEmpty) for (let h = Math.floor(from / 60); h < Math.ceil(to / 60); h++)
-    if (!map.has(h + '|local') && !map.has(h + '|export')) list.push({ hr: h, cat: '-', n: 0 });
-  list.sort((a, b) => a.hr - b.hr || (a.cat === 'export' ? 1 : -1));
-
-  const day0 = list.length ? Math.floor(list[0].hr / 24) : 0;
-  list.forEach(r => r.alt = (Math.floor(r.hr / 24) - day0) % 2 === 1);
-
-  LAST = { list, tE, tL, from, to,
-    info: ['Receiving: ' + $('stage').selectedOptions[0].text, 'Count: ' + (mode === 'rows' ? 'rows' : 'sum of Number of Samples'), 'Customer: ' + (cu || 'All')].join('  |  ') };
+  const st = $('stage').value, mode = $('mode').value, cu = $('cust').value, cf = $('catf').value, sl = +$('slot').value, showEmpty = $('empty').value === '1';
+  let a1, a2, list, tE = 0, tL = 0, daily = [];
+  await runProcess('Building your report', [
+    ['Applying date & time range', () => { a1 = DATA.filter(x => x.t >= from && x.t < to); }],
+    ['Matching column, customer & category', () => { a2 = a1.filter(x => (st === 'all' || x.stage === +st) && (!cu || x.cu === cu) && (!cf || x.raw === cf)); }],
+    ['Grouping into time slots', () => { const map = new Map();
+      a2.forEach(x => { const v = mode === 'rows' ? 1 : x.n, k = Math.floor(x.t / sl) + '|' + x.cat; map.set(k, (map.get(k) || 0) + v); x.cat === 'export' ? tE += v : tL += v; });
+      list = [...map.entries()].map(([k, v]) => { const [h, c] = k.split('|'); return { st: +h * sl, cat: c, n: v }; });
+      if (showEmpty) for (let h = Math.floor(from / sl); h < Math.ceil(to / sl); h++) if (!map.has(h + '|local') && !map.has(h + '|export')) list.push({ st: h * sl, cat: '-', n: 0 });
+      list.sort((a, b) => a.st - b.st || (a.cat === 'export' ? 1 : -1)); }],
+    ['Calculating totals & insights', () => { const d0 = list.length ? Math.floor(list[0].st / 1440) : 0; list.forEach(r => r.alt = (Math.floor(r.st / 1440) - d0) % 2 === 1);
+      const dm = new Map(), sm = new Map(); list.forEach(r => { const d = Math.floor(r.st / 1440), o = dm.get(d) || { l: 0, e: 0, slots: new Map() };
+        r.cat === 'export' ? o.e += r.n : o.l += r.n; o.slots.set(r.st, (o.slots.get(r.st) || 0) + r.n); dm.set(d, o); sm.set(r.st, (sm.get(r.st) || 0) + r.n); });
+      daily = [...dm.entries()].sort((a, b) => a[0] - b[0]).map(([d, o]) => { const pk = [...o.slots.entries()].sort((a, b) => b[1] - a[1])[0];
+        return { d, l: o.l, e: o.e, pk: pk && pk[1] ? slotLabel(pk[0], sl) + ' (' + pk[1] + ')' : '-' }; });
+      const ps = [...sm.entries()].sort((a, b) => b[1] - a[1])[0]; LAST = { list, tE, tL, from, to, sl, daily, peak: ps && ps[1] ? ps : null, slots: sm.size,
+        info: [] }; }]
+  ], DATA.length);
   render();
-};
-
-function render() {
-  const { list, tE, tL, from, to, info } = LAST;
-  const tb = $('tb'); tb.innerHTML = '';
-  list.forEach((r, i) => {
-    const tr = document.createElement('tr'); tr.className = 'rowin' + (r.alt ? ' alt' : ''); tr.style.animationDelay = Math.min(i * 25, 600) + 'ms';
-    tr.innerHTML = '<td>' + (i + 1) + '</td><td>' + fmtDate(r.hr * 60) + '</td><td>' + slotLabel(r.hr) +
-      '</td><td class="n">' + r.n + '</td><td class="' + r.cat + '">' + r.cat + '</td>';
-    tb.appendChild(tr);
-  });
-  if (!list.length) tb.innerHTML = '<tr><td colspan="5">No data found in this range. Check the data range shown above.</td></tr>';
-  countUp($('gt'), tE + tL); countUp($('ft'), tE + tL); countUp($('te'), tE); countUp($('tl'), tL);
-
-  const byH = new Map(); list.forEach(r => { const o = byH.get(r.hr) || { l: 0, e: 0 }; r.cat === 'export' ? o.e += r.n : o.l += r.n; byH.set(r.hr, o); });
-  const mx = Math.max(1, ...[...byH.values()].map(o => o.l + o.e)), ch = $('chart'); ch.innerHTML = '';
-  [...byH.entries()].forEach(([h, o]) => {
-    const b = document.createElement('div'); b.className = 'bar'; b.style.setProperty('--i', 0);
-    b.innerHTML = '<span class="v">' + (o.l + o.e) + '</span><i style="height:' + (o.e / mx * 100) + '%;background:var(--ex)"></i><i style="height:' +
-      (o.l / mx * 100) + '%;background:var(--lo)"></i><span class="t">' + fmtHr(h % 24).replace(':00 ', '') + '</span>';
-    b.querySelectorAll('i').forEach(x => x.style.animationDelay = (ch.children.length * 60) + 'ms'); ch.appendChild(b);
-  });
-  $('meta').innerHTML = '<b>Date &amp; Time:</b> ' + fmtShort(from) + ' TO ' + fmtShort(to - 1) + '<br><b>Time:</b> ' +
-    fmtTime(from).toLowerCase() + ' to ' + fmtTime(to).toLowerCase() + '<br>' + info;
-  const o = $('out'); o.style.display = 'block'; o.classList.remove('rise'); void o.offsetWidth; o.classList.add('rise');
-  $('pdf').disabled = $('xl').disabled = $('print').disabled = false;
 }
 
-/* ---------- PDF ---------- */
-$('pdf').onclick = () => {
-  if (!LAST) return;
-  const { list, tE, tL, from, to } = LAST;
-  const doc = new jspdf.jsPDF({ unit: 'pt', format: 'a4' });
-  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 36;
-  const NAVY = ACC[ACCENT];
+function render() {
+  const { list, tE, tL, from, to, sl, daily, peak, slots } = LAST, tot = tE + tL;
+  const tb = $('tb'); tb.innerHTML = '';
+  list.forEach((r, i) => { const tr = document.createElement('tr'); tr.className = 'rowin' + (r.alt ? ' alt' : ''); tr.style.animationDelay = Math.min(i * 25, 600) + 'ms';
+    tr.innerHTML = '<td>' + (i + 1) + '</td><td>' + fmtDate(r.st) + '</td><td>' + slotLabel(r.st, sl) + '</td><td class="n">' + r.n + '</td><td class="' + r.cat + '">' + r.cat + '</td>'; tb.appendChild(tr); });
+  if (!list.length) tb.innerHTML = '<tr><td colspan="5">No data found in this range. Check the data range shown above.</td></tr>';
+  const db = $('db'); db.innerHTML = '';
+  daily.forEach(r => { const tr = document.createElement('tr'); tr.className = 'rowin'; tr.innerHTML = '<td>' + fmtDate(r.d * 1440) + '</td><td class="local">' + r.l + '</td><td class="export">' + r.e + '</td><td class="n">' + (r.l + r.e) + '</td><td>' + r.pk + '</td>'; db.appendChild(tr); });
+  countUp($('gt'), tot); countUp($('ft'), tot); countUp($('te'), tE); countUp($('tl'), tL);
+  $('pk').textContent = peak ? slotLabel(peak[0], sl) : '-'; $('pk2').textContent = peak ? fmtDate(peak[0]).split(',').slice(0, 2).join(',') + ' | ' + peak[1] + ' samples' : '';
+  $('xs').textContent = (tot ? Math.round(tE / tot * 100) : 0) + '%'; $('av').textContent = slots ? 'Avg ' + (tot / slots).toFixed(1) + ' per active slot' : '';
+  const ch = $('chart'); ch.innerHTML = ''; const byS = new Map(); list.forEach(r => { const o = byS.get(r.st) || { l: 0, e: 0 }; r.cat === 'export' ? o.e += r.n : o.l += r.n; byS.set(r.st, o); });
+  const mx = Math.max(1, ...[...byS.values()].map(o => o.l + o.e));
+  [...byS.entries()].forEach(([s, o]) => { const b = document.createElement('div'); b.className = 'bar';
+    b.innerHTML = '<span class="v">' + (o.l + o.e) + '</span><i style="height:' + o.e / mx * 100 + '%;background:var(--ex)"></i><i style="height:' + o.l / mx * 100 + '%;background:var(--lo)"></i><span class="t">' + fmtTime(s).replace(':00 ', '') + '</span>';
+    b.querySelectorAll('i').forEach(x => x.style.animationDelay = ch.children.length * 60 + 'ms'); ch.appendChild(b); });
+  $('meta').innerHTML = '<b>Date &amp; Time:</b> ' + fmtShort(from) + ' TO ' + fmtShort(to - 1) + '<br><b>Time:</b> ' + fmtTime(from).toLowerCase() + ' to ' + fmtTime(to).toLowerCase() +
+    '<br>Receiving: ' + $('stage').selectedOptions[0].text + ' | Count: ' + (($('mode').value === 'rows') ? 'rows' : 'sum of Number of Samples') + ' | Customer: ' + ($('cust').value || 'All') + ' | Category: ' + ($('catf').value || 'All');
+  const o = $('out'); o.style.display = 'block'; o.classList.remove('rise'); void o.offsetWidth; o.classList.add('rise');
+  $('pdf').disabled = $('xl').disabled = $('print').disabled = false; o.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  $('vh').style.display = b.dataset.v === 'h' ? '' : 'none'; $('vd').style.display = b.dataset.v === 'd' ? '' : 'none'; });
 
-  // title block (white background, blue text)
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...NAVY);
-  doc.text('TIME & SAMPLE NO.', W / 2, 42, { align: 'center' });
-  doc.setFontSize(9.5);
-  doc.setTextColor(0); doc.text('Date & Time:', 100, 78);
-  doc.setTextColor(...NAVY);
+/* ---------- PDF (reference layout) ---------- */
+$('pdf').onclick = () => {
+  if (!LAST) return; const { list, tE, tL, from, to, sl } = LAST;
+  const doc = new jspdf.jsPDF({ unit: 'pt', format: 'a4' }), W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 36, NAVY = ACC[ACCENT];
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...NAVY); doc.text('TIME & SAMPLE NO.', W / 2, 42, { align: 'center' });
+  doc.setFontSize(9.5); doc.setTextColor(0); doc.text('Date & Time:', 100, 78); doc.setTextColor(...NAVY);
   doc.text(fmtShort(from) + ' TO ' + fmtShort(to - 1), 390, 72, { align: 'center' });
   doc.text('time ' + fmtTime(from).toLowerCase() + ' to ' + fmtTime(to).toLowerCase(), 390, 85, { align: 'center' });
   doc.setDrawColor(...NAVY); doc.setLineWidth(0.8); doc.line(M, 96, W - M, 96);
-
-  // summary boxes
-  const box = (y, rows) => doc.autoTable({
-    startY: y, margin: { left: 70 }, tableWidth: 290, theme: 'grid', body: rows,
+  const box = (y, rows) => doc.autoTable({ startY: y, margin: { left: 70 }, tableWidth: 290, theme: 'grid', body: rows,
     styles: { fontSize: 9.5, fontStyle: 'bold', halign: 'center', textColor: 0, lineColor: 0, lineWidth: 1, cellPadding: 4 },
-    columnStyles: { 0: { cellWidth: 170 }, 1: { cellWidth: 120, fillColor: [242, 242, 242] } }
-  });
-  box(110, [['Grand Total', tE + tL]]);
-  box(doc.lastAutoTable.finalY + 5, [['Total Export Sample', tE], ['Total Local Sample', tL]]);
-
-  // main table
-  doc.autoTable({
-    startY: doc.lastAutoTable.finalY + 10, margin: { left: M, right: M, top: 40, bottom: 44 }, theme: 'plain',
-    head: [['Sno', 'Date', 'Time', 'Total Sample', 'Remarks']],
-    body: list.map((r, i) => [i + 1, fmtDate(r.hr * 60), slotLabel(r.hr), r.n, r.cat]),
-    foot: [[{ content: 'Total Sample', colSpan: 3 }, tE + tL, '']],
-    showFoot: 'lastPage',
+    columnStyles: { 0: { cellWidth: 170 }, 1: { cellWidth: 120, fillColor: [242, 242, 242] } } });
+  box(110, [['Grand Total', tE + tL]]); box(doc.lastAutoTable.finalY + 5, [['Total Export Sample', tE], ['Total Local Sample', tL]]);
+  doc.autoTable({ startY: doc.lastAutoTable.finalY + 10, margin: { left: M, right: M, top: 40, bottom: 44 }, theme: 'plain',
+    head: [['Sno', 'Date', 'Time', 'Total Sample', 'Remarks']], body: list.map((r, i) => [i + 1, fmtDate(r.st), slotLabel(r.st, sl), r.n, r.cat]),
+    foot: [[{ content: 'Total Sample', colSpan: 3 }, tE + tL, '']], showFoot: 'lastPage',
     styles: { fontSize: 9, cellPadding: 10, halign: 'center', valign: 'middle', textColor: 0, lineColor: [205, 205, 205], lineWidth: { bottom: 0.5 } },
     headStyles: { fillColor: NAVY, textColor: 255, fontStyle: 'bold', cellPadding: 6, lineWidth: 0 },
     footStyles: { fillColor: [220, 228, 245], textColor: 0, fontStyle: 'bold', lineWidth: 0 },
     columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 170 }, 2: { cellWidth: 125 }, 3: { fontStyle: 'bold', cellWidth: 95 } },
-    didParseCell: d => { if (d.section === 'foot' && d.column.index === 4) d.cell.styles.fillColor = [255, 255, 255]; }
-  });
-
-  // footer on every page
-  const n = doc.getNumberOfPages();
-  for (let i = 1; i <= n; i++) {
-    doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(110);
-    doc.text('Prepared by Sarfaraz', W / 2, H - 22, { align: 'center' });
-  }
+    didParseCell: d => { if (d.section === 'foot' && d.column.index === 4) d.cell.styles.fillColor = [255, 255, 255]; } });
+  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(110); doc.text('Prepared by Sarfaraz', W / 2, H - 22, { align: 'center' }); }
   doc.save('Time_Sample_' + fmtShort(from) + '_to_' + fmtShort(to - 1) + '.pdf');
 };
 
 /* ---------- Excel & print ---------- */
 $('xl').onclick = () => {
-  if (!LAST) return;
-  const { list, tE, tL, from, to } = LAST;
-  const aoa = [['Grand Total', tE + tL], ['Total Export Sample', tE], ['Total Local Sample', tL], [], ['Sno', 'Date', 'Time', 'Total Sample', 'Remarks']];
-  list.forEach((r, i) => aoa.push([i + 1, fmtDate(r.hr * 60), slotLabel(r.hr), r.n, r.cat]));
-  aoa.push(['', '', 'Total', tE + tL, ''], [], ['Date & Time: ' + fmtShort(from) + ' TO ' + fmtShort(to - 1)],
-    ['time ' + fmtTime(from).toLowerCase() + ' to ' + fmtTime(to).toLowerCase()]);
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{ wch: 20 }, { wch: 32 }, { wch: 22 }, { wch: 14 }, { wch: 10 }];
-  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Time & Sample');
+  if (!LAST) return; const { list, tE, tL, from, to, sl, daily } = LAST;
+  const a = [['Grand Total', tE + tL], ['Total Export Sample', tE], ['Total Local Sample', tL], [], ['Sno', 'Date', 'Time', 'Total Sample', 'Remarks']];
+  list.forEach((r, i) => a.push([i + 1, fmtDate(r.st), slotLabel(r.st, sl), r.n, r.cat]));
+  a.push(['', '', 'Total', tE + tL, ''], [], ['Date & Time: ' + fmtShort(from) + ' TO ' + fmtShort(to - 1)], ['time ' + fmtTime(from).toLowerCase() + ' to ' + fmtTime(to).toLowerCase()]);
+  const w1 = XLSX.utils.aoa_to_sheet(a); w1['!cols'] = [{ wch: 20 }, { wch: 32 }, { wch: 22 }, { wch: 14 }, { wch: 10 }];
+  const b = [['Date', 'Local', 'Export', 'Total', 'Peak slot']]; daily.forEach(r => b.push([fmtDate(r.d * 1440), r.l, r.e, r.l + r.e, r.pk]));
+  const w2 = XLSX.utils.aoa_to_sheet(b); w2['!cols'] = [{ wch: 32 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 26 }];
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, w1, 'Time & Sample'); XLSX.utils.book_append_sheet(wb, w2, 'Daily summary');
   XLSX.writeFile(wb, 'Time_Sample_' + fmtShort(from) + '_to_' + fmtShort(to - 1) + '.xlsx');
 };
 $('print').onclick = () => window.print();
